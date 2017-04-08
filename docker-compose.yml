@@ -11,6 +11,5 @@ services:
      - 53703:53703
     volumes:
      - .:/web-app
-# - ./node_modules:/web-app/node_modules
-    command: sh -c 'npm install; ionic serve --all'
+     - ./node_modules:/web-app/node_modules
     stdin_open: true
