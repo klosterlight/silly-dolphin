@@ -1,0 +1,16 @@
+version: '2'
+services:
+  web:
+    image: netizy/ionic-2
+    environment:
+      - NODE_ENV=development
+      - DEBUG='true'
+    ports:
+     - 8100:8100
+     - 35729:35729
+     - 53703:53703
+    volumes:
+     - .:/web-app
+# - ./node_modules:/web-app/node_modules
+    command: sh -c 'npm install; ionic serve --all'
+    stdin_open: true
