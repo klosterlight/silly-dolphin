@@ -1,27 +1,26 @@
 import { Component } from '@angular/core';
 import {NavController, Platform} from 'ionic-angular';
-import { Spotify } from 'ng2-cordova-oauth/core';
-import {OauthCordova} from 'ng2-cordova-oauth/platform/cordova'
+import { SpotifyService } from '../../app/services/spotify-service';
+import { SpotifyModel } from '../../app/models/spotify';
 
 @Component({
   selector: 'page-hello-ionic',
-  templateUrl: 'hello-ionic.html'
+  templateUrl: 'hello-ionic.html',
+  providers: [SpotifyService]
 })
 export class HelloIonicPage {
-  private oauth: OauthCordova = new OauthCordova();
-  private spotifyProvder: Spotify =  new Spotify({
-    clientId: "c70714997a0843f59b778597b6afc0c2",
-    appScope: ["user-read-private", "playlist-read-private"]
-  })
-  constructor(private navCtrl: NavController, private platform: Platform) { }
+  constructor(private navCtrl: NavController, private platform: Platform, private _spotifyService: SpotifyService) { }
 
+  private _spotifyModel = new SpotifyModel();
+  errorMessage: string;
   public spotify() {
-    console.log("De perdido entra aqui?");
+    var token: string ='';
+
     this.platform.ready().then(() => {
-      this.oauth.logInVia(this.spotifyProvder).then(success => {
-        console.log("RESULT: " + JSON.stringify(success));
-      }, error => {
-        console.log("ERROR: ", error);
+      this._spotifyService.getAccessToken().then((response) => {
+        token = response['access_token'];
+        console.log(token);
+        this._spotifyService.getMe(token).subscribe();
       });
     });
   }
