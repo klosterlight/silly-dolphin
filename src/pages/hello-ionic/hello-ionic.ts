@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {NavController, Platform} from 'ionic-angular';
+import { Storage } from '@ionic/storage';
 import { SpotifyService } from '../../app/services/spotify-service';
 import { SpotifyModel } from '../../app/models/spotify';
 
@@ -9,19 +10,35 @@ import { SpotifyModel } from '../../app/models/spotify';
   providers: [SpotifyService]
 })
 export class HelloIonicPage {
-  constructor(private navCtrl: NavController, private platform: Platform, private _spotifyService: SpotifyService) { }
+  constructor(private navCtrl: NavController, private platform: Platform,
+              private _spotifyService: SpotifyService, public storage: Storage) { }
 
   private _spotifyModel = new SpotifyModel();
   errorMessage: string;
-  public spotify() {
-    var token: string ='';
-
+  ngOnInit() {
     this.platform.ready().then(() => {
-      this._spotifyService.getAccessToken().then((response) => {
-        token = response['access_token'];
-        console.log(token);
-        this._spotifyService.getMe(token).subscribe();
+      this.storage.get('user').then((data) => {
+        this._spotifyModel.setToken(data.accessToken);
+        this._spotifyModel.setName(data.name);
+        console.log(this._spotifyModel.name);
+        console.log(this._spotifyModel.accessToken);
       });
+    });
+  }
+  public spotify() {
+    this.platform.ready().then(() => {
+      if(this._spotifyModel.hasInvalidAccessToken()) {
+        this._spotifyService.getAccessToken().then((response) => {
+          this._spotifyModel.setToken(response['access_token']);
+
+          this._spotifyService.getMe(this._spotifyModel.accessToken).subscribe(
+            data => {
+              this._spotifyModel.setName(data['id'])
+              this.storage.set('user', this._spotifyModel);
+            }
+          );
+        });
+      }
     });
   }
 }

@@ -15,6 +15,7 @@ export class SpotifyService {
     appScope: ["user-read-private", "playlist-read-private"]
   });
   private meUrl = 'https://api.spotify.com/v1/me';  // URL to web API
+  private playListUrl = 'https://api.spotify.com/v1/me/playlists';
   constructor (private http: Http) {}
 
   getAccessToken(): Promise<SpotifyModel> {
@@ -28,10 +29,16 @@ export class SpotifyService {
                     .map(this.extractData)
                     .catch(this.handleError);
   }
+  getPlay(accessToken): Observable<SpotifyModel> {
+    let headers = new Headers({'Authorization': 'Bearer ' + accessToken});
+    let options = new RequestOptions({headers: headers});
+    return this.http.get(this.playListUrl, options)
+                    .map(this.extractData)
+                    .catch(this.handleError);
+  }
   private extractData(res: Response) {
-    console.log(JSON.stringify(res));
     let body = res.json();
-    return body.data || { };
+    return body  || { };
   }
   private handleError (error: Response | any) {
     // In a real world app, you might use a remote logging infrastructure

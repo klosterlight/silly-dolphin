@@ -11,4 +11,11 @@ export class SpotifyModel {
   setName(name) {
     this.name = name;
   }
+
+  hasInvalidAccessToken() {
+    if(this.accessToken){
+      return false;
+    }
+    return true;
+  }
 }

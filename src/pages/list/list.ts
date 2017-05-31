@@ -1,34 +1,45 @@
 import { Component } from '@angular/core';
-
-import { NavController, NavParams } from 'ionic-angular';
-
-import { ItemDetailsPage } from '../item-details/item-details';
+import { NavController, NavParams, Platform } from 'ionic-angular';
+import { Storage } from '@ionic/storage';
+import { SpotifyService } from '../../app/services/spotify-service';
+import { SpotifyModel } from '../../app/models/spotify';
 
 @Component({
   selector: 'page-list',
-  templateUrl: 'list.html'
+  templateUrl: 'list.html',
+  providers: [SpotifyService]
 })
 export class ListPage {
-  icons: string[];
   items: Array<{title: string, note: string, icon: string}>;
+  playLists: Array<{name: string, id: string, author: string}>;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-    this.icons = ['flask', 'wifi', 'beer', 'football', 'basketball', 'paper-plane',
-    'american-football', 'boat', 'bluetooth', 'build'];
+  constructor(public navCtrl: NavController, public navParams: NavParams,
+              public storage: Storage,private _spotifyService: SpotifyService,
+              private platform:Platform) { }
 
-    this.items = [];
-    for(let i = 1; i < 11; i++) {
-      this.items.push({
-        title: 'Item ' + i,
-        note: 'This is item #' + i,
-        icon: this.icons[Math.floor(Math.random() * this.icons.length)]
+  private _spotifyModel = new SpotifyModel();
+
+  ngOnInit(){
+    this.platform.ready().then(() => {
+      this.storage.get('user').then((data) => {
+        this._spotifyModel.setToken(data.accessToken);
+        this.playList();
       });
-    }
-  }
-
-  itemTapped(event, item) {
-    this.navCtrl.push(ItemDetailsPage, {
-      item: item
     });
+  }
+  playList() {
+    this.playLists = [];
+    console.log(this._spotifyModel.accessToken);
+    this._spotifyService.getPlay(this._spotifyModel.accessToken).subscribe(
+      res => {
+        res['items'].forEach((x:any) => {
+          this.playLists.push({
+            name: x.name,
+            id: x.id,
+            author: x.owner.id
+          });
+        })
+      }
+    );
   }
 }
