@@ -122,7 +122,23 @@ export class ListPage {
           text: 'Edit',
           icon: 'open',
           handler: () => {
-            //update alarm
+            let modal = this.modalCtrl.create(ItemDetailsPage, {
+              array: this.playLists,
+              alarm: alarm,
+              id: alarm.id
+            });
+            modal.present();
+            modal.onDidDismiss((data) => {
+              if(data){
+                for(let i = 0; i < this.alarms.length; i++){
+                  if(this.alarms[i].id === data.id) {
+                    this.alarms[i] = data;
+                    break;
+                  }
+                }
+                this.storage.set('alarm', this.alarms);
+              }
+            });
           }
         },{
           text: 'Cancel',

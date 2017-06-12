@@ -21,6 +21,12 @@ export class ItemDetailsPage {
 
   ngOnInit() {
     this.playLists = this.navParams.get('array');
+    if(this.navParams.get('alarm')) {
+      let alarm = this.navParams.get('alarm');
+      this.myName = alarm.name;
+      this.myDate = alarm.dateInput;
+      this.playSelect = alarm.playListName;
+    }
   }
   public closeAlarm(){
     this.navCtrl.pop();
