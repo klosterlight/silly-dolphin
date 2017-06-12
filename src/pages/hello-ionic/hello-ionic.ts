@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {NavController, Platform} from 'ionic-angular';
+import {NavController, Platform, ModalController} from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { SpotifyService } from '../../app/services/spotify-service';
 import { SpotifyModel } from '../../app/models/spotify';
@@ -11,17 +11,18 @@ import { SpotifyModel } from '../../app/models/spotify';
 })
 export class HelloIonicPage {
   constructor(private navCtrl: NavController, private platform: Platform,
-              private _spotifyService: SpotifyService, public storage: Storage) { }
+              private _spotifyService: SpotifyService, public storage: Storage,
+              public modalCtrl: ModalController) { }
 
   private _spotifyModel = new SpotifyModel();
   errorMessage: string;
   ngOnInit() {
     this.platform.ready().then(() => {
       this.storage.get('user').then((data) => {
-        this._spotifyModel.setToken(data.accessToken);
-        this._spotifyModel.setName(data.name);
-        console.log(this._spotifyModel.name);
-        console.log(this._spotifyModel.accessToken);
+        if(data){
+          this._spotifyModel.setToken(data.accessToken);
+          this._spotifyModel.setName(data.name);
+        }
       });
     });
   }

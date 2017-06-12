@@ -12,7 +12,7 @@ export class SpotifyService {
   private oauth: OauthCordova = new OauthCordova();
   private spotifyProvider: Spotify =  new Spotify({
     clientId: "c70714997a0843f59b778597b6afc0c2",
-    appScope: ["user-read-private", "playlist-read-private"]
+    appScope: ["user-read-private", "playlist-read-private", "user-modify-playback-state", "user-read-playback-state"]
   });
   private meUrl = 'https://api.spotify.com/v1/me';  // URL to web API
   private playListUrl = 'https://api.spotify.com/v1/me/playlists';
@@ -36,6 +36,15 @@ export class SpotifyService {
                     .map(this.extractData)
                     .catch(this.handleError);
   }
+  getTracks(accessToken, userId, playListId): Observable<SpotifyModel> {
+    let tracksUrl = 'https://api.spotify.com/v1/users/' + userId + '/playlists/' + playListId + '/tracks'
+    let headers = new Headers({'Authorization': 'Bearer ' + accessToken});
+    let options = new RequestOptions({headers: headers});
+    return this.http.get(tracksUrl, options)
+                    .map(this.extractData)
+                    .catch(this.handleError);
+  }
+
   private extractData(res: Response) {
     let body = res.json();
     return body  || { };

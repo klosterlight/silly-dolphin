@@ -35,18 +35,37 @@ export class ItemDetailsPage {
     };
     let alarmDate = moment(this.myDate);
     let playListData;
+    let track;
     for (let i = 0; i < this.playLists.length; i++) {
       if (this.playLists[i].name === alarm.playListName) {
         playListData = this.playLists[i].tracks;
       }
     }
+    track = this.getRandomSong(playListData);
     this.localNotifications.schedule({
       id: alarm.id,
       title: alarm.name,
       at: new Date(new Date(alarmDate.format('YYYY-MM-DDTHH:mm')).getTime()),
-      sound: null,
+      sound: track,
       data: alarm.playListName,
     });
     this.viewCtrl.dismiss(alarm);
+  }
+  getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  getRandomSong(tracks) {
+    let song: string;
+    do {
+      let i = this.getRandomInt(0, tracks.total);
+      let y = 0;
+      tracks['items'].forEach((x:any) => {
+        if(y === i) {
+          song = x.track.preview_url;
+        }
+        y++;
+      })
+    } while(song === null);
+    return song;
   }
 }
