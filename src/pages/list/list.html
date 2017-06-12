@@ -8,6 +8,7 @@
 </ion-header>
 
 <ion-content>
+  <h2>PlayLists</h2>
   <ion-list>
     <button ion-item *ngFor="let playList of playLists">
       <ion-icon name="musical-notes" item-left></ion-icon>
@@ -17,4 +18,15 @@
       </div>
     </button>
   </ion-list>
+  <h2>Alarms</h2>
+  <ion-list>
+    <button ion-item *ngFor="let alarm of alarms" (click)="presentActionSheet(alarm)">
+      <ion-icon name="timer" item-left></ion-icon>
+      {{alarm.name}}
+      <div class="item-note" item-right>
+        {{alarm.date}}
+      </div>
+    </button>
+  </ion-list>
+  <button ion-button color="primary" (click)="createAlarm()">New Alarm</button>
 </ion-content>
