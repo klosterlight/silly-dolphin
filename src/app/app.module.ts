@@ -5,6 +5,7 @@ import { HttpModule, JsonpModule } from '@angular/http';
 import { MyApp } from './app.component';
 import { IonicStorageModule } from '@ionic/storage';
 import { LocalNotifications } from '@ionic-native/local-notifications';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
 import { ItemDetailsPage } from '../pages/item-details/item-details';
@@ -40,7 +41,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    LocalNotifications
+    LocalNotifications,
+    BackgroundMode
   ]
 })
 export class AppModule {}
