@@ -3,6 +3,7 @@ import { NavController, NavParams, Platform, ModalController, ActionSheetControl
          AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { LocalNotifications } from '@ionic-native/local-notifications';
+import { BackgroundMode } from '@ionic-native/background-mode';
 import { SpotifyService } from '../../app/services/spotify-service';
 import { SpotifyModel } from '../../app/models/spotify';
 import { ItemDetailsPage } from '../item-details/item-details';
@@ -15,13 +16,13 @@ import { ItemDetailsPage } from '../item-details/item-details';
 export class ListPage {
   items: Array<{title: string, note: string, icon: string}>;
   playLists: Array<{name: string, id: string, author: string, uri: string, tracks: any}>;
-  alarms: Array<{name: string, date: any, playListName: any, id: number, dateInput: any}>;
+  alarms: Array<{name: string, date: any, playListName: any, id: number, dateInput: any, repeat: boolean}>;
   trigger: boolean;
   constructor(public navCtrl: NavController, public navParams: NavParams,
               public storage: Storage,private _spotifyService: SpotifyService,
               private platform:Platform, public modalCtrl: ModalController,
               public actionSheetCtrl: ActionSheetController, public alertCtrl: AlertController,
-              public localNotifications: LocalNotifications) { }
+              public localNotifications: LocalNotifications, public backgroundMode: BackgroundMode) { }
 
   private _spotifyModel = new SpotifyModel();
   public alarmId: number = 1;
@@ -40,6 +41,12 @@ export class ListPage {
         this.alarms = data;
       }
     });
+    if(this.backgroundMode.isEnabled()) {
+    }
+    else {
+      this.backgroundMode.enable();
+      this.triggeredAlarm()
+    }
   }
   getPlayLists() {
     this.playLists = [];
@@ -88,24 +95,57 @@ export class ListPage {
     });
   }
   triggeredAlarm() {
+    let playListData;
+    let track = new Audio();
     this.localNotifications.on("trigger", (notification) => {
+      for (let i = 0; i < this.playLists.length; i++) {
+        if (this.playLists[i].name === notification.data) {
+          console.log("Found playlist");
+          playListData = this.playLists[i].tracks;
+        }
+      }
+      track.src = this.getRandomSong(playListData);
+      console.log(track.src);
+      track.load();
+      track.volume = .5;
+      track.play();
       let stop = this.alertCtrl.create({
         title: notification.title,
         buttons: [
           {
             text: 'Snooze',
             handler: () => {
+              track.pause();
             }
           },
           {
             text: 'Stop',
             handler: () => {
+              track.pause()
             }
           }
         ]
       });
       stop.present();
     });
+    //this.localNotifications.on()
+  }
+  getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  getRandomSong(tracks) {
+    let song: string;
+    do {
+      let i = this.getRandomInt(0, tracks.total);
+      let y = 0;
+      tracks['items'].forEach((x:any) => {
+        if(y === i) {
+          song = x.track.preview_url;
+        }
+        y++;
+      })
+    } while(song === null);
+    return song;
   }
   presentActionSheet(alarm) {
     let actionSheet = this.actionSheetCtrl.create({
@@ -178,5 +218,25 @@ export class ListPage {
       }
     }
     this.storage.set('alarm', this.alarms);
+  }
+  public deleteAlarms(){
+    let confirm = this.alertCtrl.create({
+      title: 'Delete All',
+      message: 'Are you sure you want to delete all your alarms?',
+      buttons: [
+        {
+          text: 'Cancel',
+          handler: () => {}
+        },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.localNotifications.cancelAll();
+            this.localNotifications.clearAll();
+          }
+        }
+      ]
+    });
+    confirm.present();
   }
 }

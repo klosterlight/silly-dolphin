@@ -15,6 +15,7 @@ export class ItemDetailsPage {
   myDate = moment().format();
   playSelect: any;
   id: any;
+  repeat: boolean;
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
               public viewCtrl: ViewController, public localNotifications: LocalNotifications) { }
@@ -26,6 +27,7 @@ export class ItemDetailsPage {
       this.myName = alarm.name;
       this.myDate = alarm.dateInput;
       this.playSelect = alarm.playListName;
+      this.repeat = alarm.repeat
     }
   }
   public closeAlarm(){
@@ -37,41 +39,22 @@ export class ItemDetailsPage {
       date: moment(this.myDate).format('hh:mm a'),
       playListName: this.playSelect,
       id: this.navParams.get('id'),
-      dateInput: this.myDate
+      dateInput: this.myDate,
+      repeat: this.repeat
     };
     let alarmDate = moment(this.myDate);
-    let playListData;
-    let track;
-    for (let i = 0; i < this.playLists.length; i++) {
-      if (this.playLists[i].name === alarm.playListName) {
-        playListData = this.playLists[i].tracks;
-      }
+    let repeatEvery: string;
+    if(this.repeat){
+      repeatEvery = "day";
     }
-    track = this.getRandomSong(playListData);
     this.localNotifications.schedule({
       id: alarm.id,
       title: alarm.name,
-      at: new Date(new Date(alarmDate.format('YYYY-MM-DDTHH:mm')).getTime()),
-      sound: track,
+      firstAt: new Date(new Date(alarmDate.format('YYYY-MM-DDTHH:mm')).getTime()),
+      sound: null,
       data: alarm.playListName,
+      every: repeatEvery
     });
     this.viewCtrl.dismiss(alarm);
-  }
-  getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-  getRandomSong(tracks) {
-    let song: string;
-    do {
-      let i = this.getRandomInt(0, tracks.total);
-      let y = 0;
-      tracks['items'].forEach((x:any) => {
-        if(y === i) {
-          song = x.track.preview_url;
-        }
-        y++;
-      })
-    } while(song === null);
-    return song;
   }
 }

@@ -21,5 +21,9 @@
     <ion-option *ngFor="let playList of playLists">{{playList.name}}</ion-option>
   </ion-select>
   </ion-item>
+  <ion-item>
+    <ion-label>Reapeat</ion-label>
+    <ion-toggle [(ngModel)]="repeat"></ion-toggle>
+  </ion-item>
   <button ion-button color="primary" (click)="saveAlarm()">Save</button>
 </ion-content>
