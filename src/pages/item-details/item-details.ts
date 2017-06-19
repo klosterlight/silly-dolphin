@@ -16,6 +16,7 @@ export class ItemDetailsPage {
   playSelect: any;
   id: any;
   repeat: boolean;
+  alarmDate: any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
               public viewCtrl: ViewController, public localNotifications: LocalNotifications) { }
@@ -42,19 +43,28 @@ export class ItemDetailsPage {
       dateInput: this.myDate,
       repeat: this.repeat
     };
-    let alarmDate = moment(this.myDate);
+    this.verifyDate(alarm.dateInput);
     let repeatEvery: string;
     if(this.repeat){
       repeatEvery = "day";
     }
+
     this.localNotifications.schedule({
       id: alarm.id,
       title: alarm.name,
-      firstAt: new Date(new Date(alarmDate.format('YYYY-MM-DDTHH:mm')).getTime()),
+      firstAt: new Date(new Date(this.alarmDate.format('YYYY-MM-DDTHH:mm')).getTime()),
       sound: null,
       data: alarm.playListName,
       every: repeatEvery
     });
     this.viewCtrl.dismiss(alarm);
+  }
+  public verifyDate(date) {
+    if(moment().format() > date) {
+      this.alarmDate = moment(date).add(1, 'd');
+    }
+    else {
+      this.alarmDate = moment(date);
+    }
   }
 }
