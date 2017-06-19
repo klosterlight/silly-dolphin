@@ -7,6 +7,7 @@ import { BackgroundMode } from '@ionic-native/background-mode';
 import { SpotifyService } from '../../app/services/spotify-service';
 import { SpotifyModel } from '../../app/models/spotify';
 import { ItemDetailsPage } from '../item-details/item-details';
+import * as moment from 'moment';
 
 @Component({
   selector: 'page-list',
@@ -53,7 +54,7 @@ export class ListPage {
     this._spotifyService.getPlay(this._spotifyModel.accessToken).subscribe(
       res => {
         res['items'].forEach((x:any) => {
-          this._spotifyService.getTracks(this._spotifyModel.accessToken, this._spotifyModel.name, x.id).subscribe(
+          this._spotifyService.getTracks(this._spotifyModel.accessToken, x.owner.id, x.id).subscribe(
             data => {
               this.playLists.push({
                 name: x.name,
@@ -86,9 +87,6 @@ export class ListPage {
     modal.present();
     modal.onDidDismiss((data) => {
       if(data){
-        if(this.alarms[0] === undefined){
-          //this.triggeredAlarm()
-        }
         this.alarms.push(data);
         this.storage.set('alarm', this.alarms);
       }
@@ -100,14 +98,11 @@ export class ListPage {
     this.localNotifications.on("trigger", (notification) => {
       for (let i = 0; i < this.playLists.length; i++) {
         if (this.playLists[i].name === notification.data) {
-          console.log("Found playlist");
           playListData = this.playLists[i].tracks;
         }
       }
       track.src = this.getRandomSong(playListData);
-      console.log(track.src);
       track.load();
-      track.volume = .5;
       track.play();
       let stop = this.alertCtrl.create({
         title: notification.title,
@@ -116,19 +111,22 @@ export class ListPage {
             text: 'Snooze',
             handler: () => {
               track.pause();
+              this.localNotifications.clear(notification.id);
+              this.postponeAlarm(notification);
             }
           },
           {
             text: 'Stop',
             handler: () => {
-              track.pause()
+              track.pause();
+              this.localNotifications.clearAll();
             }
           }
-        ]
+        ],
+        enableBackdropDismiss: false
       });
       stop.present();
     });
-    //this.localNotifications.on()
   }
   getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -144,7 +142,7 @@ export class ListPage {
         }
         y++;
       })
-    } while(song === null);
+    } while(song === null || song === undefined);
     return song;
   }
   presentActionSheet(alarm) {
@@ -233,10 +231,21 @@ export class ListPage {
           handler: () => {
             this.localNotifications.cancelAll();
             this.localNotifications.clearAll();
+            this.alarms = [];
+            this.storage.set('alarm', this.alarms);
           }
         }
       ]
     });
     confirm.present();
+  }
+  public postponeAlarm(notification) {
+    this.localNotifications.schedule({
+      id: 999,
+      title: notification.title,
+      at: new Date(new Date(moment().format('YYYY-MM-DDTHH:mm')).getTime() + 300000),
+      sound: null,
+      data: notification.data,
+    });
   }
 }
